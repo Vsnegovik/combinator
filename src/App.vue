@@ -1,5 +1,11 @@
-<script setup>
+<script lang="ts">
 import previewGrid from './components/preview-grid.vue'
+
+export default {
+  components: {
+    previewGrid
+  }
+}
 </script>
 
 <template>

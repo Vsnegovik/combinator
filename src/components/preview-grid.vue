@@ -54,25 +54,22 @@
   </section>
 </template>
 
-<script setup>
+<script lang="ts">
 import { headers, body } from "../assets/data.json";
 import { random } from "lodash";
-import { reactive, ref, warn } from "vue";
+import { Ref, ref } from "vue";
 
-const toUpperCase = (str) => `${str[0].toUpperCase()}${str.slice(1)}`;
-const isEndOfPhrase = (str) => "!?.;".includes(str[str.length - 1]);
-const fixGrammar = (text) => {
+const fixGrammar = (text: string) => {
   return text.replaceAll(/([!?.;] .)/g, (match, g1) => {
     return g1.toUpperCase();
   });
 };
 const name = ref("");
-const isCompaact = ref(false);
 const getCongratulation = () => {
   congratulations.value = body.map((group) => random(0, group.length - 1));
   output.value = getOutput();
 };
-const updateCongratulation = (groupIndex, itemIndex) => {
+const updateCongratulation = (groupIndex: number, itemIndex: number) => {
   congratulations.value[groupIndex] = itemIndex;
   output.value = getOutput();
 };
@@ -88,9 +85,23 @@ const getOutput = () => {
       .join(" ")
   );
 };
-let congratulations = ref([]);
+let congratulations: Ref<number[]> = ref([]);
 const output = ref(getOutput());
 getCongratulation();
+
+export default {
+  setup() {
+    return {
+      name,
+      output,
+      headers,
+      body,
+      congratulations,
+      updateCongratulation,
+      getCongratulation
+    }
+  }
+}
 </script>
 
 <style scoped>
