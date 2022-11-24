@@ -1,9 +1,5 @@
 <template>
-  <form @submit.prevent="getCongratulation">
-    <input placeholder="имя именинницы" v-model="name" />
-    <textarea :value="output" rows="6"></textarea>
-    <button type="submit"></button>
-  </form>
+  <button @click="randomizeBodyItemsIndices"></button>
   <section class="component-preview">
     <header>
       <div
@@ -18,11 +14,11 @@
       <template v-for="(group, groupIndex) in body" :key="groupIndex">
         <div
           v-for="(item, index) in group"
-          @click="updateCongratulation(groupIndex, index)"
+          @click="updateBodyItemIndex(groupIndex, index)"
           :key="item"
           :class="[
             `group-${groupIndex + 1}`,
-            { active: congratulations[groupIndex] === index },
+            { active: bodyItemsIndices[groupIndex] === index },
           ]"
         >
           {{ item }}
@@ -42,11 +38,11 @@
       <template v-for="(group, groupIndex) in body" :key="groupIndex">
         <div
           v-for="(item, index) in group"
-          @click="updateCongratulation(groupIndex, index)"
+          @click="updateBodyItemIndex(groupIndex, index)"
           :key="item"
           :class="[
             `group-${groupIndex + 1}`,
-            { active: congratulations[groupIndex] === index },
+            { active: bodyItemsIndices[groupIndex] === index },
           ]"
         ></div>
       </template>
@@ -55,53 +51,58 @@
 </template>
 
 <script lang="ts">
-import { headers, body } from "../assets/data.json";
-import { random } from "lodash";
-import { Ref, ref } from "vue";
+import { random } from 'lodash'
+import { defineComponent, Ref, ref, computed, toRefs } from 'vue'
 
 const fixGrammar = (text: string) => {
   return text.replaceAll(/([!?.;] .)/g, (match, g1) => {
-    return g1.toUpperCase();
-  });
-};
-const name = ref("");
-const getCongratulation = () => {
-  congratulations.value = body.map((group) => random(0, group.length - 1));
-  output.value = getOutput();
-};
-const updateCongratulation = (groupIndex: number, itemIndex: number) => {
-  congratulations.value[groupIndex] = itemIndex;
-  output.value = getOutput();
-};
-const getOutput = () => {
-  return fixGrammar(
-    congratulations.value
-      .map((item, index) => {
-        let firstname = !index && name.value ? ` ${name.value}` : "";
-        if (!index) firstname += ','
+    return g1.toUpperCase()
+  })
+}
 
-        return `${headers[index]}${firstname} ${body[index][item]}`;
-      })
-      .join(" ")
-  );
-};
-let congratulations: Ref<number[]> = ref([]);
-const output = ref(getOutput());
-getCongratulation();
+let bodyItemsIndices: Ref<number[]> = ref([])
 
-export default {
-  setup() {
+export default defineComponent({
+  props: {
+    data: {
+      type: Object as () => { headers: string[]; body: string[][] },
+      required: true,
+    },
+  },
+
+  inheritAttrs: false,
+  emits: ['update:output'],
+  setup(props, context) {
+    const { headers, body } = { ...props.data }
+    const output = computed(() => {
+      const result = bodyItemsIndices.value
+        .map(
+          (groupIndex, index) => `${headers[index]} ${body[index][groupIndex]}`
+        )
+        .join(' ')
+      return fixGrammar(result)
+    })
+    const randomizeBodyItemsIndices = () => {
+      bodyItemsIndices.value = body.map((group) => random(0, group.length - 1))
+      context.emit('update:output', output.value)
+    }
+    const updateBodyItemIndex = (groupIndex: number, itemIndex: number) => {
+      bodyItemsIndices.value[groupIndex] = itemIndex
+      context.emit('update:output', output.value)
+    }
+
+    randomizeBodyItemsIndices()
+
     return {
-      name,
-      output,
       headers,
       body,
-      congratulations,
-      updateCongratulation,
-      getCongratulation
+      output,
+      bodyItemsIndices,
+      updateBodyItemIndex,
+      randomizeBodyItemsIndices,
     }
-  }
-}
+  },
+})
 </script>
 
 <style scoped>
@@ -172,26 +173,6 @@ export default {
 header,
 .content {
   display: contents;
-}
-
-form {
-  grid-column: span 2;
-  display: grid;
-  grid-gap: 10px;
-  align-content: start;
-  grid-template-columns: 1fr auto;
-}
-input {
-  grid-column: span 2;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-textarea,
-input {
-  font-family: Arial;
 }
 button {
   background-image: url("../assets/loader.png");
