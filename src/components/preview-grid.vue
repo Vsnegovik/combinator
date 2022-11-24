@@ -52,12 +52,14 @@
 
 <script lang="ts">
 import { random } from 'lodash'
-import { defineComponent, Ref, ref, computed, toRefs } from 'vue'
+import { defineComponent, Ref, ref, computed } from 'vue'
 
 const fixGrammar = (text: string) => {
-  return text.replaceAll(/([!?.;] .)/g, (match, g1) => {
-    return g1.toUpperCase()
-  })
+  return text
+    .replaceAll(/([!?.;] .)/g, (match, g1) => {
+      return g1.toUpperCase()
+    })
+    .replace(/\s+/, ' ')
 }
 
 let bodyItemsIndices: Ref<number[]> = ref([])
@@ -68,27 +70,36 @@ export default defineComponent({
       type: Object as () => { headers: string[]; body: string[][] },
       required: true,
     },
+    cols: {
+      type: Number,
+      required: true,
+    },
+    rows: {
+      type: Number,
+      required: true,
+    },
   },
 
   inheritAttrs: false,
-  emits: ['update:output'],
+  emits: ['update:output', 'update:outputRaw'],
   setup(props, context) {
     const { headers, body } = { ...props.data }
-    const output = computed(() => {
-      const result = bodyItemsIndices.value
+    const outputRaw = computed(() => {
+      return bodyItemsIndices.value
         .map(
           (groupIndex, index) => `${headers[index]} ${body[index][groupIndex]}`
         )
-        .join(' ')
-      return fixGrammar(result)
     })
+    const output = computed(() => fixGrammar(outputRaw.value.join(' ')))
     const randomizeBodyItemsIndices = () => {
       bodyItemsIndices.value = body.map((group) => random(0, group.length - 1))
       context.emit('update:output', output.value)
+      context.emit('update:outputRaw', outputRaw.value)
     }
     const updateBodyItemIndex = (groupIndex: number, itemIndex: number) => {
       bodyItemsIndices.value[groupIndex] = itemIndex
       context.emit('update:output', output.value)
+      context.emit('update:outputRaw', outputRaw.value)
     }
 
     randomizeBodyItemsIndices()
@@ -100,20 +111,22 @@ export default defineComponent({
       bodyItemsIndices,
       updateBodyItemIndex,
       randomizeBodyItemsIndices,
+      cssCols: props.cols,
+      cssRows: props.rows,
     }
   },
 })
 </script>
 
-<style scoped>
+<style>
 .component-preview {
   --color1: #fff4ce;
   --color2: #cce1e5;
   --color3: #f5d2dd;
   --color4: #d1ebd2;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(14, auto);
+  grid-template-columns: repeat(v-bind(cssCols), max-content);
+  grid-template-rows: repeat(calc(v-bind(cssRows) + 1), auto);
   align-items: stretch;
   text-align: center;
   gap: 1px;
@@ -140,6 +153,24 @@ export default defineComponent({
   background-color: var(--color3);
 }
 .group-4 {
+  background-color: var(--color4);
+}
+.group-5 {
+  background-color: var(--color1);
+}
+.group-6 {
+  background-color: var(--color2);
+}
+.group-7 {
+  background-color: var(--color3);
+}
+.group-8 {
+  background-color: var(--color4);
+}
+.group-9 {
+  background-color: var(--color3);
+}
+.group-10 {
   background-color: var(--color4);
 }
 
@@ -169,6 +200,24 @@ export default defineComponent({
 }
 .title:nth-child(4) {
   grid-column: 4;
+}
+.title:nth-child(5) {
+  grid-column: 5;
+}
+.title:nth-child(6) {
+  grid-column: 6;
+}
+.title:nth-child(7) {
+  grid-column: 7;
+}
+.title:nth-child(8) {
+  grid-column: 8;
+}
+.title:nth-child(9) {
+  grid-column: 9;
+}
+.title:nth-child(10) {
+  grid-column: 10;
 }
 header,
 .content {

@@ -1,12 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Birthday from '../pages/random-congratulation.vue'
+import Congratulation from '../pages/random-congratulation.vue'
+import Poem from '../pages/random-poem.vue'
 
 const routes = [
   {
-    path: '/',
-    name: 'Birthday',
-    component: Birthday
+    path: '/congratulation',
+    name: 'Congratulation',
+    component: Congratulation
+  },
+  {
+    path: '/poem',
+    name: 'Poem',
+    component: Poem
   },
 ]
 
