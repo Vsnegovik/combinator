@@ -125,7 +125,7 @@ export default defineComponent({
   --color3: #f5d2dd;
   --color4: #d1ebd2;
   display: grid;
-  grid-template-columns: repeat(v-bind(cssCols), max-content);
+  grid-template-columns: repeat(v-bind(cssCols), auto);
   grid-template-rows: repeat(calc(v-bind(cssRows) + 1), auto);
   align-items: stretch;
   text-align: center;

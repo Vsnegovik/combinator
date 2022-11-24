@@ -1,6 +1,27 @@
 <template>
-<router-view></router-view>
+  <randomPoem v-if="isPoemPage"></randomPoem>
+  <randomCongratulation v-else></randomCongratulation>
 </template>
+
+<script lang='ts'>
+import randomPoem from './pages/random-poem.vue'
+import randomCongratulation from './pages/random-congratulation.vue'
+import { defineComponent, ref } from 'vue'
+
+const isPoemPage = ref(true)
+
+export default defineComponent({
+  components: {
+    randomPoem,
+    randomCongratulation,
+  },
+  setup() {
+    return {
+      isPoemPage
+    }
+  }
+})
+</script>
 
 <style>
 #app {
