@@ -29,7 +29,7 @@ export default defineComponent({
   <input placeholder="имя именинницы" v-model="name" />
   <textarea :value="congratulation" rows="6"></textarea>
 
-  <preview-grid :data="json" v-model:output="output" :cols="4" :rows="14"></preview-grid>
+  <preview-grid :data="json" v-model:output="output" :cols="4" :rows="13"></preview-grid>
 </template>
 
 <style scoped>
