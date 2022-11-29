@@ -54,7 +54,6 @@ export default defineComponent({
   background-color: #f9f0e5;
   justify-content: center;
   padding: 50px 50px;
-  justify-self: self-start;
   font-size: 20px;
 }
 </style>

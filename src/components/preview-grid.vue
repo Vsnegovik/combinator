@@ -233,10 +233,15 @@ button {
   width: 100px;
   height: 100px;
   border-radius: 50%;
+  animation: pulse 1400ms infinite;
+  place-self: center;
 }
 
 button:active {
   animation: rotate 300ms;
+}
+button:hover {
+  filter: brightness(85%);
 }
 
 @keyframes rotate {
@@ -269,6 +274,23 @@ button:active {
   100% {
     background-size: 110%;
     transform: rotate(-15deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(139, 200, 88, 0.7);
+  }
+  
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(139, 200, 88, 0);
+  }
+  
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(139, 200, 88, 0);
   }
 }
 
