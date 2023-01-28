@@ -13,6 +13,8 @@
   <randomPoem v-if="isPoemPage"></randomPoem>
   <randomBirthdayCongratulation v-else-if="isCongratulationPage"></randomBirthdayCongratulation>
   <randomNewYearCongratulation v-else-if="isNeyYearCongratulationPage"></randomNewYearCongratulation>
+
+  <a href="https://github.com/Vsnegovik/combinator" class="github-repo" target="_blank"><img src="./assets/github.png" alt=""></a>
 </template>
 
 <script lang='ts'>
@@ -132,5 +134,15 @@ nav div:hover {
 nav div.active {
   color: white;
   background-color: #8bc858;
+}
+
+.github-repo {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.github-repo img {
+  width: 50px;
+  height: 50px;
 }
 </style>
