@@ -2,8 +2,8 @@
   <!-- из-за специфики работы github pages, нельзя использовать vue-router -->
   <nav>
     <div
-      v-for="(navItem, index) in navigation"
-      :key="index"
+      v-for="navItem in navigation"
+      :key="navItem.value"
       @click="currentNavItem = navItem.value"
       :class="[`item-${navItem.value}`, { active: currentNavItem === navItem.value }]"
     >
@@ -11,46 +11,57 @@
     </div>
   </nav>
   <randomPoem v-if="isPoemPage"></randomPoem>
-  <randomCongratulation v-else-if="isCongratulationPage"></randomCongratulation>
+  <randomBirthdayCongratulation v-else-if="isCongratulationPage"></randomBirthdayCongratulation>
+  <randomNewYearCongratulation v-else-if="isNeyYearCongratulationPage"></randomNewYearCongratulation>
 </template>
 
 <script lang='ts'>
 import randomPoem from './pages/random-poem.vue'
-import randomCongratulation from './pages/random-congratulation.vue'
-import { defineComponent, reactive, ref } from 'vue'
-import { computed } from 'vue'
+import randomBirthdayCongratulation from './pages/random-birthday.vue'
+import randomNewYearCongratulation from './pages/random-new-year.vue'
+import { defineComponent, reactive, ref, computed } from 'vue'
 
 enum ENavItem {
-  CONGRATULATION,
+  BIRTHDAY,
   POEM,
+  NEW_YEAR
 }
 
 const currentNavItem = ref(ENavItem.POEM)
 const isPoemPage = computed(() => currentNavItem.value === ENavItem.POEM)
 const isCongratulationPage = computed(
-  () => currentNavItem.value === ENavItem.CONGRATULATION
+  () => currentNavItem.value === ENavItem.BIRTHDAY
+)
+const isNeyYearCongratulationPage = computed(
+  () => currentNavItem.value === ENavItem.NEW_YEAR
 )
 const navigation = reactive([
   {
-    title: 'Поздравление',
-    value: ENavItem.CONGRATULATION,
+    title: 'С днем рождения',
+    value: ENavItem.BIRTHDAY,
   },
   {
     title: 'Стих',
     value: ENavItem.POEM,
+  },
+  {
+    title: 'С Новым годом',
+    value: ENavItem.NEW_YEAR,
   },
 ])
 
 export default defineComponent({
   components: {
     randomPoem,
-    randomCongratulation,
+    randomBirthdayCongratulation,
+    randomNewYearCongratulation
   },
   setup() {
     return {
       currentNavItem,
       isPoemPage,
       isCongratulationPage,
+      isNeyYearCongratulationPage,
       navigation,
     }
   },
@@ -86,10 +97,10 @@ nav {
 nav div {
   list-style-type: none;
   padding: 10px 10px 10px 40px;
-  background-color: #fff;
   background-repeat: no-repeat;
   background-position: left 10px center;
   background-color: #eee;
+  background-size: auto 60% ;
 }
 
 nav div.item-0 {
@@ -104,6 +115,13 @@ nav div.item-1 {
 }
 nav div.item-1.active {
   background-image: url("assets/poem-color.png");
+}
+
+nav div.item-2 {
+  background-image: url("assets/santa-mono.svg");
+}
+nav div.item-2.active {
+  background-image: url("assets/santa-color.svg");
 }
 
 nav div:hover {
