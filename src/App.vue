@@ -13,6 +13,7 @@
   <randomPoem v-if="isPoemPage"></randomPoem>
   <randomBirthdayCongratulation v-else-if="isCongratulationPage"></randomBirthdayCongratulation>
   <randomNewYearCongratulation v-else-if="isNeyYearCongratulationPage"></randomNewYearCongratulation>
+  <randomSpeech v-else-if="isSpeechPage"></randomSpeech>
 
   <a href="https://github.com/Vsnegovik/combinator" class="github-repo" target="_blank"><img src="./assets/github.png" alt=""></a>
 </template>
@@ -21,12 +22,14 @@
 import randomPoem from './pages/random-poem.vue'
 import randomBirthdayCongratulation from './pages/random-birthday.vue'
 import randomNewYearCongratulation from './pages/random-new-year.vue'
+import randomSpeech from './pages/random-speech.vue'
 import { defineComponent, reactive, ref, computed } from 'vue'
 
 enum ENavItem {
   BIRTHDAY,
   POEM,
-  NEW_YEAR
+  NEW_YEAR,
+  SPEECH
 }
 
 const currentNavItem = ref(ENavItem.POEM)
@@ -36,6 +39,9 @@ const isCongratulationPage = computed(
 )
 const isNeyYearCongratulationPage = computed(
   () => currentNavItem.value === ENavItem.NEW_YEAR
+)
+const isSpeechPage = computed(
+  () => currentNavItem.value === ENavItem.SPEECH
 )
 const navigation = reactive([
   {
@@ -50,13 +56,18 @@ const navigation = reactive([
     title: 'С Новым годом',
     value: ENavItem.NEW_YEAR,
   },
+  {
+    title: 'Речь',
+    value: ENavItem.SPEECH,
+  },
 ])
 
 export default defineComponent({
   components: {
     randomPoem,
     randomBirthdayCongratulation,
-    randomNewYearCongratulation
+    randomNewYearCongratulation,
+    randomSpeech
   },
   setup() {
     return {
@@ -65,6 +76,7 @@ export default defineComponent({
       isCongratulationPage,
       isNeyYearCongratulationPage,
       navigation,
+      isSpeechPage
     }
   },
 })
@@ -124,6 +136,13 @@ nav div.item-2 {
 }
 nav div.item-2.active {
   background-image: url("assets/santa-color.svg");
+}
+
+nav div.item-3 {
+  background-image: url("assets/speech-mono.svg");
+}
+nav div.item-3.active {
+  background-image: url("assets/speech-color.svg");
 }
 
 nav div:hover {

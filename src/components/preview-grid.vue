@@ -1,26 +1,17 @@
 <template>
-  <button @click="randomizeBodyItemsIndices"></button>
+  <button @click="randomize"></button>
   <section class="component-preview">
     <header>
-      <div
-        :class="['title', `group-${index + 1}`]"
-        :key="index"
-        v-for="(header, index) in headers"
-      >
+      <div :class="[ 'title', `group-${index + 1}` ]" :key="index" v-for="(  header, index  ) in headers">
         {{ header }}
       </div>
     </header>
     <div class="content">
-      <template v-for="(group, groupIndex) in body" :key="groupIndex">
-        <div
-          v-for="(item, index) in group"
-          @click="updateBodyItemIndex(groupIndex, index)"
-          :key="item"
-          :class="[
-            `group-${groupIndex + 1}`,
-            { active: bodyItemsIndices[groupIndex] === index },
-          ]"
-        >
+      <template v-for="(  group, groupIndex  ) in body" :key="groupIndex">
+        <div v-for="(  item, index  ) in group" @click="updateBodyItemIndex(groupIndex, index)" :key="item" :class="[
+          `group-${groupIndex + 1}`,
+          { active: bodyItemsIndices[ groupIndex ] === index },
+        ]">
           {{ item }}
         </div>
       </template>
@@ -28,23 +19,14 @@
   </section>
   <section class="component-preview compact">
     <header>
-      <div
-        :class="['title', `group-${index + 1}`]"
-        :key="index"
-        v-for="(header, index) in headers"
-      ></div>
+      <div :class="[ 'title', `group-${index + 1}` ]" :key="index" v-for="(  header, index  ) in headers"></div>
     </header>
     <div class="content">
-      <template v-for="(group, groupIndex) in body" :key="groupIndex">
-        <div
-          v-for="(item, index) in group"
-          @click="updateBodyItemIndex(groupIndex, index)"
-          :key="item"
-          :class="[
-            `group-${groupIndex + 1}`,
-            { active: bodyItemsIndices[groupIndex] === index },
-          ]"
-        ></div>
+      <template v-for="(  group, groupIndex  ) in body" :key="groupIndex">
+        <div v-for="(  item, index  ) in group" @click="updateBodyItemIndex(groupIndex, index)" :key="item" :class="[
+          `group-${groupIndex + 1}`,
+          { active: bodyItemsIndices[ groupIndex ] === index },
+        ]"></div>
       </template>
     </div>
   </section>
@@ -52,14 +34,15 @@
 
 <script lang="ts">
 import { random } from 'lodash'
-import { defineComponent, Ref, ref, computed } from 'vue'
+import { defineComponent, Ref, ref, computed, reactive } from 'vue'
 
 const fixGrammar = (text: string) => {
   return text
     .replaceAll(/([!?.;] .)/g, (match, g1) => {
       return g1.toUpperCase()
     })
-    .replace(/\s+/, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .replace(/^\s/, '')
 }
 
 let bodyItemsIndices: Ref<number[]> = ref([])
@@ -78,39 +61,74 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+    isInfinite: {
+      type: Boolean
+    },
   },
 
   inheritAttrs: false,
-  emits: ['update:output', 'update:outputRaw'],
+  emits: [ 'update:output', 'update:outputRaw', 'update:outputInfinite' ],
   setup(props, context) {
     const { headers, body } = { ...props.data }
+    const historyOfBodyItemsIndices: number[][] = reactive([])
     const outputRaw = computed(() => {
       return bodyItemsIndices.value
         .map(
-          (groupIndex, index) => `${headers[index]} ${body[index][groupIndex]}`
+          (groupIndex, index) => `${headers[ index ]} ${body[ index ][ groupIndex ]}`
         )
     })
     const output = computed(() => fixGrammar(outputRaw.value.join(' ')))
+    const outputInfinite = computed(() => {
+      return fixGrammar(historyOfBodyItemsIndices.map(
+        (group) => group.map((groupIndex, index) => `${headers[ index ]} ${body[ index ][ groupIndex ]}`)
+      ).flatMap(el => el).join(' '))
+    })
     const randomizeBodyItemsIndices = () => {
       bodyItemsIndices.value = body.map((group) => random(0, group.length - 1))
+
       context.emit('update:output', output.value)
       context.emit('update:outputRaw', outputRaw.value)
     }
     const updateBodyItemIndex = (groupIndex: number, itemIndex: number) => {
-      bodyItemsIndices.value[groupIndex] = itemIndex
+      bodyItemsIndices.value[ groupIndex ] = itemIndex
       context.emit('update:output', output.value)
       context.emit('update:outputRaw', outputRaw.value)
     }
+    const randomizeBodyItemsIndicesInfinity = () => {
+      historyOfBodyItemsIndices.splice(0)
+      
+      while (historyOfBodyItemsIndices.length < 100) {
 
-    randomizeBodyItemsIndices()
+        bodyItemsIndices.value = body.map((group) => random(0, group.length - 1))
+        const indices = bodyItemsIndices.value
+
+        if (!historyOfBodyItemsIndices.map(el => el.join('')).includes(indices.join(''))) {
+          historyOfBodyItemsIndices.push(bodyItemsIndices.value)
+        }
+      }
+
+      context.emit('update:outputInfinite', outputInfinite.value)
+    }
+
+    const randomize = () => {
+      if (props.isInfinite) {
+        randomizeBodyItemsIndicesInfinity()
+      } else {
+        randomizeBodyItemsIndices()
+      }
+    }
+
+    randomize()
 
     return {
       headers,
       body,
       output,
+      outputInfinite,
       bodyItemsIndices,
+      historyOfBodyItemsIndices,
       updateBodyItemIndex,
-      randomizeBodyItemsIndices,
+      randomize,
       cssCols: props.cols,
       cssRows: props.rows,
     }
@@ -139,37 +157,48 @@ export default defineComponent({
   overflow: hidden;
   content-visibility: hidden;
 }
+
 .component-preview div {
   padding: 8px;
   outline: 1px solid;
 }
+
 .group-1 {
   background-color: var(--color1);
 }
+
 .group-2 {
   background-color: var(--color2);
 }
+
 .group-3 {
   background-color: var(--color3);
 }
+
 .group-4 {
   background-color: var(--color4);
 }
+
 .group-5 {
   background-color: var(--color1);
 }
+
 .group-6 {
   background-color: var(--color2);
 }
+
 .group-7 {
   background-color: var(--color3);
 }
+
 .group-8 {
   background-color: var(--color4);
 }
+
 .group-9 {
   background-color: var(--color3);
 }
+
 .group-10 {
   background-color: var(--color4);
 }
@@ -178,9 +207,11 @@ export default defineComponent({
   filter: grayscale(75%);
   cursor: pointer;
 }
+
 .content div:not(.active):hover {
   filter: grayscale(0);
 }
+
 .content .active {
   filter: grayscale(0) saturate(3);
 }
@@ -192,37 +223,48 @@ export default defineComponent({
 .title:nth-child(1) {
   grid-column: 1;
 }
+
 .title:nth-child(2) {
   grid-column: 2;
 }
+
 .title:nth-child(3) {
   grid-column: 3;
 }
+
 .title:nth-child(4) {
   grid-column: 4;
 }
+
 .title:nth-child(5) {
   grid-column: 5;
 }
+
 .title:nth-child(6) {
   grid-column: 6;
 }
+
 .title:nth-child(7) {
   grid-column: 7;
 }
+
 .title:nth-child(8) {
   grid-column: 8;
 }
+
 .title:nth-child(9) {
   grid-column: 9;
 }
+
 .title:nth-child(10) {
   grid-column: 10;
 }
+
 header,
 .content {
   display: contents;
 }
+
 button {
   background-image: url("../assets/loader.png");
   background-position: center;
@@ -240,6 +282,7 @@ button {
 button:active {
   animation: rotate 300ms;
 }
+
 button:hover {
   filter: brightness(85%);
 }
@@ -249,18 +292,23 @@ button:hover {
     background-size: 100%;
     transform: rotate(-35deg);
   }
+
   10% {
     transform: rotate(25deg);
   }
+
   20% {
     transform: rotate(-35deg);
   }
+
   30% {
     transform: rotate(25deg);
   }
+
   40% {
     transform: rotate(-35deg);
   }
+
   50% {
     transform: rotate(25deg);
   }
@@ -268,9 +316,11 @@ button:hover {
   80% {
     transform: rotate(-35deg);
   }
+
   90% {
     transform: rotate(25deg);
   }
+
   100% {
     background-size: 110%;
     transform: rotate(-15deg);
@@ -282,12 +332,12 @@ button:hover {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(139, 200, 88, 0.7);
   }
-  
+
   70% {
     transform: scale(1);
     box-shadow: 0 0 0 10px rgba(139, 200, 88, 0);
   }
-  
+
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(139, 200, 88, 0);
